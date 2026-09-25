@@ -20,8 +20,7 @@ def load_model():
 model = load_model()
 
 # Traffic sign information
-
-    sign_info = {
+sign_info = {
 
     0: {
         "name": "Speed Limit 20 km/h",
