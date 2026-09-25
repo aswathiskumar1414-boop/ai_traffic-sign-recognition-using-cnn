@@ -296,52 +296,30 @@ if uploaded_file is not None:
 
     image = Image.open(uploaded_file).convert("RGB")
 
-    st.image(
-        image,
-        caption="Uploaded Traffic Sign",
-        width=350
-    )
+    st.image(image, caption="Uploaded Traffic Sign", width=400)
 
-    if st.button("🔍 Recognize Traffic Sign"):
+    # Preprocessing
+    img = image.resize((32, 32))
+    img = np.array(img) / 255.0
+    img = np.expand_dims(img, axis=0)
 
-        # Resize image
-        image_resized = image.resize((32, 32))
+    # Prediction
+    prediction = model.predict(img, verbose=0)
 
-        # Convert to NumPy array
-        img_array = np.array(image_resized)
+    predicted_class = int(np.argmax(prediction))
+    confidence = float(np.max(prediction) * 100)
 
-        # Normalize
-        img_array = img_array / 255.0
+    # Get sign information
+    info = sign_info.get(predicted_class)
 
-        # Add batch dimension
-        img_array = np.expand_dims(img_array, axis=0)
+    st.subheader("🚦 Recognition Result")
 
-        # Prediction
-        prediction = model.predict(img_array, verbose=0)
-
-        predicted_class = int(np.argmax(prediction))
-        confidence = float(np.max(prediction) * 100)
-
-        st.subheader("🚦 Recognition Result")
-
-        if predicted_class in sign_info:
-
-            name, meaning, alert = sign_info[predicted_class]
-
-            st.success(f"Sign: {name}")
-
-            st.write(f"**Confidence:** {confidence:.2f}%")
-
-            st.info(f"📌 **Meaning:** {meaning}")
-
-            st.warning(f"⚠️ **Safety Alert:** {alert}")
-
-        else:
-
-            st.write(f"Predicted Class: {predicted_class}")
-
-            st.write(f"Confidence: {confidence:.2f}%")
-
-            st.warning(
-                "Information for this class is not available."
-            )
+    if info:
+        st.write(f"**Sign:** {info['name']}")
+        st.write(f"**Confidence:** {confidence:.2f}%")
+        st.write(f"**📌 Meaning:** {info['meaning']}")
+        st.write(f"**⚠️ Safety Alert:** {info['alert']}")
+    else:
+        st.write(f"**Predicted Class:** {predicted_class}")
+        st.write(f"**Confidence:** {confidence:.2f}%")
+        st.warning("Information for this class is not available.")
